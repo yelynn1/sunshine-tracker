@@ -28,6 +28,7 @@ export interface SunshineResult {
   duration: string;
   durationLabel: string;
   detail: string | null;
+  lastSunnyDate: string | null;
   temperature: number;
   isDay: boolean;
   weatherCode: number;
@@ -52,6 +53,16 @@ function formatDuration(hours: number): string {
   if (days === 1) return `1 day ${remainingHours}h`;
   if (remainingHours === 0) return `${days} days`;
   return `${days} days ${remainingHours}h`;
+}
+
+function formatDate(isoDate: string): string {
+  const date = new Date(isoDate);
+  return date.toLocaleDateString('en-GB', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
 }
 
 export function getWeatherEmoji(weatherCode: number, isDay: boolean): string {
@@ -126,6 +137,7 @@ export function calculateSunshine(weather: WeatherResponse): SunshineResult {
         duration: formatDuration(todaySunHours),
         durationLabel: 'of sunshine today',
         detail: 'The sun set after a lovely day. Sweet dreams!',
+        lastSunnyDate: formatDate(hourly.time[lastSunnyIndex]),
         temperature,
         isDay,
         weatherCode,
@@ -152,6 +164,7 @@ export function calculateSunshine(weather: WeatherResponse): SunshineResult {
       duration: formatDuration(streakHours),
       durationLabel: streakHours <= 1 ? 'of sunshine right now' : 'of glorious sunshine',
       detail: streakHours > 24 ? "What a run! Don't forget sunscreen." : null,
+      lastSunnyDate: null,
       temperature,
       isDay,
       weatherCode,
@@ -174,6 +187,7 @@ export function calculateSunshine(weather: WeatherResponse): SunshineResult {
       duration: '7+ days',
       durationLabel: 'without sunshine',
       detail: "We haven't seen the sun in over a week. Hang in there!",
+      lastSunnyDate: null,
       temperature,
       isDay,
       weatherCode,
@@ -195,6 +209,7 @@ export function calculateSunshine(weather: WeatherResponse): SunshineResult {
     duration: formatDuration(hoursSinceSun),
     durationLabel: 'since we last saw the sun',
     detail: `Last time, we had ${formatDuration(lastSunDuration)} of sunshine.`,
+    lastSunnyDate: formatDate(hourly.time[lastSunnyIndex]),
     temperature,
     isDay,
     weatherCode,
