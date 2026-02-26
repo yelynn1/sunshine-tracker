@@ -49,9 +49,17 @@ src/
 - Both hooks use `AbortController` to cancel stale requests
 - Debounce is 300ms via `setTimeout` + `useRef` (no lodash)
 
+## Deployment
+
+- **Hosted on GitHub Pages**: https://yelynn1.github.io/sunshine-tracker/
+- **Vite base path**: `base: '/sunshine-tracker/'` in `vite.config.ts` (required for subpath hosting)
+- **CI/CD**: `.github/workflows/ci.yml` — lint, type-check, build on all PRs; deploy to Pages on push to `main`
+- **Branch protection on `main`**: requires passing CI + 1 approving review (admins can bypass)
+
 ## Conventions
 
 - No state management library — plain `useState`
 - No component library — all custom Tailwind styling
 - SVG cartoons are inline React components (no image assets)
 - Animations defined in `tailwind.config.js` keyframes
+- All changes to `main` go through PRs with passing CI

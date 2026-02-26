@@ -19,6 +19,8 @@ Uses the free [Open-Meteo API](https://open-meteo.com/) (no API key needed) to f
 ## Getting Started
 
 ```bash
+git clone https://github.com/yelynn1/sunshine-tracker.git
+cd sunshine-tracker
 npm install
 npm run dev
 ```
@@ -38,6 +40,12 @@ Open http://localhost:5173
 - Inline SVG cartoon characters with CSS animations
 - Structured result display with duration pill, weather condition, and temperature
 - Handles nighttime, tropical weather, and week-long cloudy stretches
+
+## Deployment
+
+Deployed to GitHub Pages via CI. Every push to `main` triggers a build and deploy.
+
+`main` is protected — all changes require a PR with passing CI and 1 approving review.
 
 ## Contributing
 
