@@ -69,7 +69,7 @@ function App() {
   const bgClass = !sunshineResult
     ? 'from-sky-400 via-cyan-400 to-blue-500'
     : sunshineResult.status === 'sunny'
-      ? 'from-amber-300 via-yellow-400 to-orange-400'
+      ? 'from-amber-500 via-orange-500 to-rose-500'
       : sunshineResult.status === 'night_after_sun'
         ? 'from-indigo-950 via-violet-950 to-slate-900'
         : 'from-indigo-400 via-purple-500 to-slate-600';

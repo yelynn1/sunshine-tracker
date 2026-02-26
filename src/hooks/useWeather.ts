@@ -19,7 +19,7 @@ export function useWeather() {
     setSunshineResult(null);
 
     try {
-      const url = `https://api.open-meteo.com/v1/forecast?latitude=${location.latitude}&longitude=${location.longitude}&current=weather_code,temperature_2m,is_day&hourly=weather_code,sunshine_duration&past_days=7&forecast_days=1&timezone=auto`;
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${location.latitude}&longitude=${location.longitude}&current=weather_code,temperature_2m,is_day&hourly=weather_code,sunshine_duration&past_days=7&forecast_days=7&timezone=auto`;
       const res = await fetch(url, { signal: controller.signal });
 
       if (!res.ok) throw new Error('Failed to fetch weather data');
