@@ -92,11 +92,23 @@ export function SunshineResult({ result, location, isLoading, error }: SunshineR
       </p>
 
       {/* Detail sub-card */}
-      {result.detail && (
-        <div className="mt-4 bg-white/10 rounded-xl px-4 py-3 border-l-4 border-white/30">
-          <p className="text-white/90 text-sm leading-relaxed">
-            {result.detail}
-          </p>
+      {(result.detail || result.lastSunnyDate) && (
+        <div className="mt-4 bg-white/10 rounded-xl px-4 py-3 border-l-4 border-white/30 text-left">
+          {result.lastSunnyDate && (
+            <p className="text-white/70 text-xs font-semibold uppercase tracking-wide">
+              Last sunny day
+            </p>
+          )}
+          {result.lastSunnyDate && (
+            <p className="text-white text-base font-bold">
+              {result.lastSunnyDate}
+            </p>
+          )}
+          {result.detail && (
+            <p className={`text-white/80 text-sm leading-relaxed ${result.lastSunnyDate ? 'mt-1' : ''}`}>
+              {result.detail}
+            </p>
+          )}
         </div>
       )}
 
