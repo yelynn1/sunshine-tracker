@@ -356,5 +356,6 @@ export function calculateSunshine(weather: WeatherResponse): SunshineResult {
     weatherCode,
     prediction,
     forecast,
+    localTime,
   };
 }
