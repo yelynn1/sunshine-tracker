@@ -12,6 +12,7 @@ export function LocationSearch({ onSelect, history, onClearHistory }: LocationSe
   const [isOpen, setIsOpen] = useState(false);
   const { results, isLoading, search, clear } = useGeocoding();
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -30,6 +31,13 @@ export function LocationSearch({ onSelect, history, onClearHistory }: LocationSe
     search(value);
   };
 
+  const handleClear = () => {
+    setQuery('');
+    clear();
+    setIsOpen(false);
+    inputRef.current?.focus();
+  };
+
   const handleSelect = (location: GeoLocation) => {
     setQuery(`${location.name}, ${location.country}`);
     setIsOpen(false);
@@ -40,29 +48,54 @@ export function LocationSearch({ onSelect, history, onClearHistory }: LocationSe
   return (
     <div className="w-full max-w-md">
       <div ref={wrapperRef} className="relative">
+        {/* Search icon */}
+        <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
+          <svg className="w-5 h-5 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
+
         <input
+          ref={inputRef}
           type="text"
           value={query}
           onChange={handleInputChange}
           onFocus={() => results.length > 0 && setIsOpen(true)}
           placeholder="Search for a city..."
-          className="w-full px-5 py-4 text-lg rounded-2xl bg-white/90 backdrop-blur
-                     shadow-lg border-2 border-white/50 outline-none
-                     focus:border-amber-400 focus:ring-4 focus:ring-amber-200/50
-                     transition-all placeholder:text-gray-400 text-gray-800"
+          className="w-full pl-12 pr-12 py-4 text-lg rounded-2xl
+                     bg-white/20 backdrop-blur-lg border border-white/30
+                     text-white placeholder:text-white/50 outline-none shadow-lg
+                     focus:bg-white/25 focus:border-white/50 focus:ring-2 focus:ring-white/20
+                     transition-all"
         />
-        {isLoading && (
+
+        {/* Loading spinner OR clear button */}
+        {isLoading ? (
           <div className="absolute right-4 top-1/2 -translate-y-1/2">
-            <div className="w-5 h-5 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
+            <div className="w-5 h-5 border-2 border-white/60 border-t-transparent rounded-full animate-spin" />
           </div>
+        ) : query && (
+          <button
+            onClick={handleClear}
+            className="absolute right-3 top-1/2 -translate-y-1/2
+                       w-7 h-7 flex items-center justify-center rounded-full
+                       text-white/50 hover:text-white hover:bg-white/20
+                       transition-all"
+            aria-label="Clear search"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         )}
+
         {isOpen && results.length > 0 && (
-          <ul className="absolute z-10 w-full mt-2 bg-white rounded-xl shadow-xl overflow-hidden border border-gray-100">
+          <ul className="absolute z-10 w-full mt-2 bg-white/90 backdrop-blur-xl rounded-xl shadow-xl overflow-hidden border border-white/30">
             {results.map((loc) => (
               <li key={loc.id}>
                 <button
                   onClick={() => handleSelect(loc)}
-                  className="w-full text-left px-5 py-3 hover:bg-amber-50
+                  className="w-full text-left px-5 py-3 hover:bg-white/50
                              transition-colors flex items-center gap-3"
                 >
                   <span className="text-lg shrink-0">{'\u{1F4CD}'}</span>

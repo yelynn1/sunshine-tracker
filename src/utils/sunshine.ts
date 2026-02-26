@@ -22,6 +22,12 @@ export interface WeatherResponse {
 
 export type SunshineStatus = 'sunny' | 'not_sunny' | 'night_after_sun';
 
+export interface DayForecast {
+  date: string;         // "Thu"
+  emoji: string;        // weather emoji for the dominant code
+  sunshineHours: number;
+}
+
 export interface SunshineResult {
   status: SunshineStatus;
   headline: string;
@@ -32,6 +38,9 @@ export interface SunshineResult {
   temperature: number;
   isDay: boolean;
   weatherCode: number;
+  prediction: string | null;
+  forecast: DayForecast[];
+  localTime: string;
 }
 
 function isSunnyHour(hourly: WeatherHourly, index: number): boolean {
@@ -39,7 +48,7 @@ function isSunnyHour(hourly: WeatherHourly, index: number): boolean {
 }
 
 function isNighttimeHour(hourly: WeatherHourly, index: number): boolean {
-  const hour = new Date(hourly.time[index]).getHours();
+  const hour = parseIsoHour(hourly.time[index]);
   return hourly.sunshine_duration[index] === 0 && (hour >= 19 || hour <= 5);
 }
 
@@ -96,6 +105,125 @@ export function getWeatherName(weatherCode: number): string {
   return 'Cloudy';
 }
 
+function parseIsoHour(isoTime: string): number {
+  // Parse hour directly from ISO string to avoid timezone conversion
+  // Format: "2026-02-26T15:00"
+  const timePart = isoTime.split('T')[1];
+  return timePart ? parseInt(timePart.split(':')[0], 10) : 0;
+}
+
+function formatHourLabel(isoTime: string): string {
+  const hours = parseIsoHour(isoTime);
+  if (hours === 0) return '12 AM';
+  if (hours === 12) return '12 PM';
+  return hours < 12 ? `${hours} AM` : `${hours - 12} PM`;
+}
+
+function getRelativeDay(targetDate: string, todayDate: string): string {
+  const target = new Date(targetDate);
+  const today = new Date(todayDate);
+  const diffDays = Math.round((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  if (diffDays === 0) return 'today';
+  if (diffDays === 1) return 'tomorrow';
+  return `on ${target.toLocaleDateString('en-GB', { weekday: 'long' })}`;
+}
+
+function getDominantWeatherCode(codes: number[]): number {
+  const freq = new Map<number, number>();
+  for (const code of codes) {
+    freq.set(code, (freq.get(code) || 0) + 1);
+  }
+  let dominant = codes[0];
+  let maxCount = 0;
+  for (const [code, count] of freq) {
+    if (count > maxCount) {
+      maxCount = count;
+      dominant = code;
+    }
+  }
+  return dominant;
+}
+
+const SHORT_DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const SHORT_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+function formatLocalTime(isoTime: string): string {
+  // Parse directly from ISO string to preserve location timezone
+  // Format: "2026-02-26T15:00"
+  const [datePart] = isoTime.split('T');
+  const [year, month, day] = datePart.split('-').map(Number);
+  // Use UTC to avoid any timezone shift when we only need day-of-week
+  const date = new Date(Date.UTC(year, month - 1, day));
+  const dayName = SHORT_DAYS[date.getUTCDay()];
+  const monthName = SHORT_MONTHS[date.getUTCMonth()];
+  return `${dayName} ${day} ${monthName}, ${formatHourLabel(isoTime)}`;
+}
+
+function calculatePrediction(
+  hourly: WeatherHourly,
+  currentIndex: number,
+  currentlySunny: boolean,
+  todayDate: string,
+): string | null {
+  if (currentlySunny) {
+    // Predict when clouds arrive — find first non-sunny daytime hour
+    for (let i = currentIndex + 1; i < hourly.time.length; i++) {
+      const hour = new Date(hourly.time[i]).getHours();
+      // Only consider daytime hours (6-18)
+      if (hour >= 6 && hour <= 18 && !isSunnyHour(hourly, i)) {
+        const day = getRelativeDay(hourly.time[i].slice(0, 10), todayDate);
+        return `Enjoy it! Clouds expected ${day} around ${formatHourLabel(hourly.time[i])}`;
+      }
+    }
+    return null;
+  }
+
+  // Not sunny — find next sunny hour
+  for (let i = currentIndex + 1; i < hourly.time.length; i++) {
+    if (isSunnyHour(hourly, i)) {
+      const day = getRelativeDay(hourly.time[i].slice(0, 10), todayDate);
+      return `Sun expected ${day} around ${formatHourLabel(hourly.time[i])}`;
+    }
+  }
+
+  return 'No sunshine in the forecast this week';
+}
+
+function calculateForecast(
+  hourly: WeatherHourly,
+  todayDate: string,
+): DayForecast[] {
+  // Group future hourly data by day, skipping today
+  const dayMap = new Map<string, { sunshine: number; codes: number[] }>();
+
+  for (let i = 0; i < hourly.time.length; i++) {
+    const dateStr = hourly.time[i].slice(0, 10);
+    if (dateStr <= todayDate) continue;
+
+    if (!dayMap.has(dateStr)) {
+      dayMap.set(dateStr, { sunshine: 0, codes: [] });
+    }
+    const day = dayMap.get(dateStr)!;
+    day.sunshine += hourly.sunshine_duration[i];
+    day.codes.push(hourly.weather_code[i]);
+  }
+
+  const result: DayForecast[] = [];
+  for (const [dateStr, data] of dayMap) {
+    const date = new Date(dateStr);
+    const dayName = date.toLocaleDateString('en-GB', { weekday: 'short' });
+    const dominantCode = getDominantWeatherCode(data.codes);
+    const sunshineHours = Math.round(data.sunshine / 3600);
+    result.push({
+      date: dayName,
+      emoji: getWeatherEmoji(dominantCode, true),
+      sunshineHours,
+    });
+  }
+
+  return result.slice(0, 7);
+}
+
 export function calculateSunshine(weather: WeatherResponse): SunshineResult {
   const { current, hourly } = weather;
   const isDay = current.is_day === 1;
@@ -112,6 +240,10 @@ export function calculateSunshine(weather: WeatherResponse): SunshineResult {
   }
 
   const currentlySunny = isDay && isSunnyHour(hourly, currentIndex);
+  const todayDate = current.time.slice(0, 10);
+  const localTime = formatLocalTime(current.time);
+  const prediction = calculatePrediction(hourly, currentIndex, currentlySunny, todayDate);
+  const forecast = calculateForecast(hourly, todayDate);
 
   // Nighttime — check if last daylight was sunny
   if (!isDay) {
@@ -141,6 +273,9 @@ export function calculateSunshine(weather: WeatherResponse): SunshineResult {
         temperature,
         isDay,
         weatherCode,
+        prediction,
+        forecast,
+        localTime,
       };
     }
   }
@@ -168,6 +303,9 @@ export function calculateSunshine(weather: WeatherResponse): SunshineResult {
       temperature,
       isDay,
       weatherCode,
+      prediction,
+      forecast,
+      localTime,
     };
   }
 
@@ -191,6 +329,9 @@ export function calculateSunshine(weather: WeatherResponse): SunshineResult {
       temperature,
       isDay,
       weatherCode,
+      prediction,
+      forecast,
+      localTime,
     };
   }
 
@@ -213,5 +354,8 @@ export function calculateSunshine(weather: WeatherResponse): SunshineResult {
     temperature,
     isDay,
     weatherCode,
+    prediction,
+    forecast,
+    localTime,
   };
 }

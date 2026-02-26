@@ -1,4 +1,4 @@
-import type { SunshineResult as SunshineResultType } from '../utils/sunshine';
+import type { SunshineResult as SunshineResultType, DayForecast } from '../utils/sunshine';
 import { getWeatherEmoji, getWeatherName } from '../utils/sunshine';
 import type { GeoLocation } from '../hooks/useGeocoding';
 import { HappySun, CryingCloud, SleepyMoon, SearchingBird } from './Cartoons';
@@ -37,6 +37,36 @@ function DurationPill({ status, duration }: { status: string; duration: string }
   );
 }
 
+function ForecastRow({ forecast }: { forecast: DayForecast[] }) {
+  if (forecast.length === 0) return null;
+
+  const maxHours = Math.max(...forecast.map(d => d.sunshineHours));
+
+  return (
+    <div className="mt-4 bg-white/10 rounded-xl px-4 py-3">
+      <p className="text-white/70 text-xs font-semibold uppercase tracking-wide mb-2">
+        7-Day Outlook
+      </p>
+      <div className="flex gap-2 overflow-x-auto pb-1">
+        {forecast.map((day) => (
+          <div
+            key={day.date}
+            className={`flex flex-col items-center min-w-[3.2rem] rounded-lg px-2 py-2 ${
+              maxHours > 0 && day.sunshineHours === maxHours
+                ? 'bg-white/20'
+                : 'bg-white/5'
+            }`}
+          >
+            <span className="text-white/70 text-xs font-semibold">{day.date}</span>
+            <span className="text-lg my-0.5">{day.emoji}</span>
+            <span className="text-white text-xs font-bold">{day.sunshineHours}h</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function SunshineResult({ result, location, isLoading, error }: SunshineResultProps) {
   if (isLoading) {
     return (
@@ -68,8 +98,17 @@ export function SunshineResult({ result, location, isLoading, error }: SunshineR
   const weatherEmoji = getWeatherEmoji(result.weatherCode, result.isDay);
   const weatherName = getWeatherName(result.weatherCode);
 
+  const cardBg = result.status === 'sunny'
+    ? 'bg-white/25 backdrop-blur-lg'
+    : 'bg-white/15 backdrop-blur-lg';
+
   return (
-    <div className="bg-white/15 backdrop-blur-lg rounded-3xl p-6 md:p-8 w-full max-w-md text-center animate-bounce-in">
+    <div className={`${cardBg} rounded-3xl p-6 md:p-8 w-full max-w-md text-center animate-bounce-in`}>
+      {/* Local time */}
+      <p className="text-white/70 text-sm font-semibold tracking-wide">
+        {result.localTime}
+      </p>
+
       {/* Cartoon */}
       <CartoonForResult result={result} />
 
@@ -111,6 +150,18 @@ export function SunshineResult({ result, location, isLoading, error }: SunshineR
           )}
         </div>
       )}
+
+      {/* Prediction line */}
+      {result.prediction && (
+        <div className="mt-4 bg-white/10 rounded-xl px-4 py-2.5 text-center">
+          <p className="text-white text-sm font-semibold">
+            {result.prediction}
+          </p>
+        </div>
+      )}
+
+      {/* 7-Day Forecast */}
+      <ForecastRow forecast={result.forecast} />
 
       {/* Temperature + weather condition */}
       <div className="mt-5 flex items-center justify-center gap-4">
