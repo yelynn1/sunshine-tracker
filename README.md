@@ -5,6 +5,8 @@
 
 A fun, playful single-page app that tells you how long it's been since a city last saw sunshine — or celebrates the current sunny streak.
 
+**[Live Demo](https://yelynn1.github.io/sunshine-tracker/)**
+
 Type in any city and get a cute cartoon character telling you the weather story:
 - **Sunny?** A happy sun shows how long the streak has been
 - **Cloudy?** A crying cloud tells you how long since the last sunshine
