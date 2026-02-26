@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { LocationSearch } from './components/LocationSearch';
 import { SunshineResult } from './components/SunshineResult';
 import { useWeather } from './hooks/useWeather';
+import { useSearchHistory } from './hooks/useSearchHistory';
 import { SearchingBird } from './components/Cartoons';
 import type { GeoLocation } from './hooks/useGeocoding';
 
@@ -56,10 +57,12 @@ function App() {
   const [selectedLocation, setSelectedLocation] = useState<GeoLocation | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
   const { sunshineResult, isLoading, error, fetchWeather } = useWeather();
+  const { history, addToHistory, clearHistory } = useSearchHistory();
 
   const handleLocationSelect = (location: GeoLocation) => {
     setSelectedLocation(location);
     setHasSearched(true);
+    addToHistory(location);
     fetchWeather(location);
   };
 
@@ -87,7 +90,7 @@ function App() {
           </p>
         </header>
 
-        <LocationSearch onSelect={handleLocationSelect} />
+        <LocationSearch onSelect={handleLocationSelect} history={history} onClearHistory={clearHistory} />
 
         {!hasSearched && <InitialPrompt />}
 
