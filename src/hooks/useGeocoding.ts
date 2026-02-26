@@ -18,8 +18,8 @@ interface GeocodingResponse {
 export function useGeocoding() {
   const [results, setResults] = useState<GeoLocation[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const timerRef = useRef<ReturnType<typeof setTimeout>>();
-  const abortRef = useRef<AbortController>();
+  const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const abortRef = useRef<AbortController>(undefined);
 
   useEffect(() => {
     return () => {

@@ -1,5 +1,8 @@
 # Sunshine Tracker
 
+[![CI](https://github.com/yelynn1/sunshine-tracker/actions/workflows/ci.yml/badge.svg)](https://github.com/yelynn1/sunshine-tracker/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 A fun, playful single-page app that tells you how long it's been since a city last saw sunshine — or celebrates the current sunny streak.
 
 Type in any city and get a cute cartoon character telling you the weather story:
@@ -33,3 +36,11 @@ Open http://localhost:5173
 - Inline SVG cartoon characters with CSS animations
 - Structured result display with duration pill, weather condition, and temperature
 - Handles nighttime, tropical weather, and week-long cloudy stretches
+
+## Contributing
+
+Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+## License
+
+[MIT](LICENSE)

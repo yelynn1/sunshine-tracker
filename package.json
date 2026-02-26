@@ -1,7 +1,14 @@
 {
   "name": "sunshine-tracker",
-  "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
+  "description": "A playful single-page app that shows how long it's been since a city last saw sunshine",
+  "author": "yelynn1",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yelynn1/sunshine-tracker.git"
+  },
+  "keywords": ["weather", "sunshine", "react", "open-meteo", "fun"],
   "type": "module",
   "scripts": {
     "dev": "vite",

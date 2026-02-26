@@ -7,7 +7,7 @@ export function useWeather() {
   const [sunshineResult, setSunshineResult] = useState<SunshineResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const abortRef = useRef<AbortController>();
+  const abortRef = useRef<AbortController>(undefined);
 
   const fetchWeather = useCallback(async (location: GeoLocation) => {
     abortRef.current?.abort();
