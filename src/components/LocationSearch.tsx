@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, type ChangeEvent } from 'react';
 import { useGeocoding, type GeoLocation } from '../hooks/useGeocoding';
+import { useCurrentLocation } from '../hooks/useCurrentLocation';
 
 interface LocationSearchProps {
   onSelect: (location: GeoLocation) => void;
@@ -11,6 +12,7 @@ export function LocationSearch({ onSelect, history, onClearHistory }: LocationSe
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const { results, isLoading, search, clear } = useGeocoding();
+  const { isLocating, error: locateError, locate, clearError } = useCurrentLocation();
   const wrapperRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -43,6 +45,11 @@ export function LocationSearch({ onSelect, history, onClearHistory }: LocationSe
     setIsOpen(false);
     clear();
     onSelect(location);
+  };
+
+  const handleLocateMe = async () => {
+    const location = await locate();
+    if (location) handleSelect(location);
   };
 
   return (
@@ -112,25 +119,63 @@ export function LocationSearch({ onSelect, history, onClearHistory }: LocationSe
         )}
       </div>
 
-      {/* History chips */}
-      {history.length > 0 && (
-        <div className="mt-3 flex flex-wrap items-center gap-2">
-          {history.map((loc) => (
-            <button
-              key={`${loc.latitude}-${loc.longitude}`}
-              onClick={() => handleSelect(loc)}
-              className="px-3 py-1.5 rounded-full bg-white/20 hover:bg-white/35
-                         text-white text-sm font-semibold backdrop-blur-sm
-                         transition-all hover:scale-105 active:scale-95"
-            >
-              {loc.name}
-            </button>
-          ))}
+      {/* Chip row */}
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        <button
+          onClick={handleLocateMe}
+          disabled={isLocating}
+          className="px-3 py-1.5 rounded-full bg-white/20 hover:bg-white/35
+                     text-white text-sm font-semibold backdrop-blur-sm
+                     transition-all hover:scale-105 active:scale-95
+                     disabled:opacity-50 disabled:cursor-not-allowed
+                     flex items-center gap-1.5"
+        >
+          {isLocating ? (
+            <div className="w-4 h-4 border-2 border-white/60 border-t-transparent rounded-full animate-spin" />
+          ) : (
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+              <circle cx="12" cy="12" r="3" />
+              <path strokeLinecap="round" d="M12 2v4m0 12v4m10-10h-4M6 12H2" />
+            </svg>
+          )}
+          My Location
+        </button>
+        {history.map((loc) => (
+          <button
+            key={`${loc.latitude}-${loc.longitude}`}
+            onClick={() => handleSelect(loc)}
+            className="px-3 py-1.5 rounded-full bg-white/20 hover:bg-white/35
+                       text-white text-sm font-semibold backdrop-blur-sm
+                       transition-all hover:scale-105 active:scale-95"
+          >
+            {loc.name}
+          </button>
+        ))}
+        {history.length > 0 && (
           <button
             onClick={onClearHistory}
             className="px-2 py-1.5 text-white/40 hover:text-white/70 text-xs font-semibold transition-colors"
           >
             Clear
+          </button>
+        )}
+      </div>
+
+      {/* Location error toast */}
+      {locateError && (
+        <div className="mt-2 px-4 py-2.5 bg-red-500/20 backdrop-blur-sm rounded-xl
+                        text-red-200 text-sm animate-fade-in
+                        flex items-center justify-between gap-2">
+          <span>{locateError}</span>
+          <button
+            onClick={clearError}
+            className="shrink-0 w-5 h-5 flex items-center justify-center rounded-full
+                       text-red-200/60 hover:text-red-200 hover:bg-red-500/20 transition-all"
+            aria-label="Dismiss error"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
           </button>
         </div>
       )}
