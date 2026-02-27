@@ -7,14 +7,18 @@ A fun, playful single-page app that tells you how long it's been since a city la
 
 **[Live Demo](https://yelynn1.github.io/sunshine-tracker/)**
 
-Type in any city and get a cute cartoon character telling you the weather story:
+Search for any city — or tap **My Location** to use your current position — and get a cute cartoon character telling you the weather story:
 - **Sunny?** A happy sun shows how long the streak has been
 - **Cloudy?** A crying cloud tells you how long since the last sunshine
 - **Nighttime?** A sleepy moon recaps the day's sunshine
 
 ## How It Works
 
-Uses the free [Open-Meteo API](https://open-meteo.com/) (no API key needed) to fetch 7 days of hourly sunshine data, then walks backwards through the hours to calculate sunshine streaks and droughts.
+Uses free, no-key-needed APIs:
+- [Open-Meteo](https://open-meteo.com/) for geocoding and 7-day hourly sunshine data
+- [Nominatim](https://nominatim.openstreetmap.org/) (OpenStreetMap) for reverse geocoding your current location
+
+Walks backwards through the hours to calculate sunshine streaks and droughts.
 
 ## Getting Started
 
@@ -35,7 +39,9 @@ Open http://localhost:5173
 
 ## Features
 
+- **"My Location" button** — one-click geolocation with reverse geocoding
 - Autocomplete city search with debounce
+- Search history chips for quick re-selection
 - Animated background gradients (golden for sunny, purple for cloudy, deep indigo for night)
 - Inline SVG cartoon characters with CSS animations
 - Structured result display with duration pill, weather condition, and temperature
