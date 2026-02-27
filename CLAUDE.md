@@ -28,8 +28,10 @@ src/
   hooks/
     useGeocoding.ts          — Debounced city search (Open-Meteo Geocoding API)
     useWeather.ts            — Weather fetch + pipes through calculateSunshine()
+    useCurrentLocation.ts    — Browser geolocation + Nominatim reverse geocode
+    useSearchHistory.ts      — localStorage-persisted recent locations (max 5)
   components/
-    LocationSearch.tsx        — Search input with autocomplete dropdown
+    LocationSearch.tsx        — Search input, autocomplete dropdown, "My Location" button, history chips
     SunshineResult.tsx        — Result card: cartoon + headline + duration pill + detail
     Cartoons.tsx              — SVG cartoon characters (HappySun, CryingCloud, SleepyMoon, SearchingBird)
 ```
@@ -38,6 +40,7 @@ src/
 
 - **Geocoding**: `https://geocoding-api.open-meteo.com/v1/search`
 - **Weather**: `https://api.open-meteo.com/v1/forecast` with `&timezone=auto` (returns local time)
+- **Reverse Geocoding**: `https://nominatim.openstreetmap.org/reverse` (OpenStreetMap Nominatim, for "My Location")
 
 ## Key Design Decisions
 
@@ -46,8 +49,9 @@ src/
 - Sunny streaks skip nighttime gaps (clear night doesn't break a streak)
 - "Last sun" duration counts all sunshine hours on that calendar day (not just consecutive)
 - `SunshineResult` returns structured fields (`headline`, `duration`, `durationLabel`, `detail`) for flexible UI rendering
-- Both hooks use `AbortController` to cancel stale requests
+- All hooks use `AbortController` stored in `useRef` (not state) to cancel stale requests, check `signal.aborted` in `finally` blocks
 - Debounce is 300ms via `setTimeout` + `useRef` (no lodash)
+- `GeoLocation` type defined in `useGeocoding.ts` and re-used by all hooks
 
 ## Deployment
 
